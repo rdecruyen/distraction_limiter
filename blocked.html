@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YouTube Access Blocked</title>
+  <title>Site Access Blocked</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,9 +23,15 @@
 </head>
 <body>
   <div class="message">
-    <h1>YouTube Access Blocked</h1>
-    <p>You have exceeded your time limit for YouTube. The site will be blocked for 10 minutes.</p>
+    <h1>Site Access Blocked</h1>
+    <p>You have exceeded your time limit for <span id="site-name"></span>. The site will be blocked for 10 minutes.</p>
     <p>To set a new timer, please wait for the cooldown period to end and refresh the page.</p>
   </div>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const site = urlParams.get('site');
+    document.getElementById('site-name').textContent = site || 'this site';
+  </script>
 </body>
 </html>
+
