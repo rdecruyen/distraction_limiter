@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Limiter no daily usage",
+  "version": "1.7",
+  "description": "Limit your screen time on YouTube",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "webNavigation"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "host_permissions": ["*://*.youtube.com/*"],
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
