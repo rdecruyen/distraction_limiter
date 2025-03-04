@@ -1,3 +1,6 @@
+console.log("Popup script loaded");
+// TODO: The problem is that we lack a background page. Do not use that, try to acces the neccesary things in the same way as in content.js
+// Rest of your popup.js code
 document.addEventListener('DOMContentLoaded', function() {
   const siteList = document.getElementById('site-list');
 
@@ -10,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
       siteElement.innerHTML = `
         <h3>${site.name}</h3>
         <button class="timer-option" data-site="${site.domain}" data-minutes="5">5 min</button>
-        <button class="timer-option" data-site="${site.domain}" data-minutes="15">15 min</button>
-        <button class="timer-option" data-site="${site.domain}" data-minutes="30">30 min</button>
+        <button class="timer-option" data-site="${site.domain}" data-minutes="12">12 min</button>
+        <button class="timer-option" data-site="${site.domain}" data-minutes="45">45 min</button>
         <input type="number" class="custom-minutes" data-site="${site.domain}" min="1" placeholder="Custom minutes">
         <button class="set-custom-timer" data-site="${site.domain}">Set Custom Timer</button>
       `;

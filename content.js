@@ -25,8 +25,8 @@ function injectPopup() {
       <h2>Set Time Limit for ${window.location.hostname}</h2>
       <div id="timer-options" style="display: flex; justify-content: space-around; width: 100%; margin: 20px 0;">
         <button class="timer-option" data-minutes="5">5 min</button>
-        <button class="timer-option" data-minutes="15">15 min</button>
-        <button class="timer-option" data-minutes="30">30 min</button>
+        <button class="timer-option" data-minutes="12">12 min</button>
+        <button class="timer-option" data-minutes="45">45 min</button>
       </div>
       <div style="margin: 20px 0;">
         <input type="number" id="customMinutes" min="1" placeholder="Custom minutes">
