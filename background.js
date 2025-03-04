@@ -1,5 +1,16 @@
-// Import the config
-import { BLOCKED_SITES } from './config.js';
+const BLOCKED_SITES = [
+  {
+    domain: "youtube.com",
+    name: "YouTube",
+    defaultLimit: 30 // in minutes
+  },
+  {
+    domain: "facebook.com",
+    name: "Facebook",
+    defaultLimit: 20
+  },
+  // Add more sites as needed
+];
 
 let siteTimers = {};
 let lastResetDate = new Date().toDateString();
@@ -64,3 +75,4 @@ setInterval(checkTabs, 1000);
 chrome.tabs.onUpdated.addListener(checkTabs);
 chrome.tabs.onActivated.addListener(checkTabs);
 chrome.windows.onFocusChanged.addListener(checkTabs);
+
