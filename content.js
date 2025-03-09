@@ -1,6 +1,7 @@
 let startTime;
 let popupInjected = false;
 
+console.log('Content script loaded');
 function injectPopup() {
   if (popupInjected) return;
 
@@ -44,16 +45,24 @@ function injectPopup() {
     });
   });
 
-  document.getElementById('setCustomTimer').addEventListener('click', function() {
-    const minutes = parseInt(document.getElementById('customMinutes').value);
-    if (!isNaN(minutes) && minutes > 0) {
-      setTimer(minutes);
-    } else {
-      alert("Please enter a valid number of minutes.");
+  document.getElementById('setCustomTimer').addEventListener('click', handleCustomTimer);
+
+document.getElementById('customMinutes').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      handleCustomTimer();
     }
   });
 
   popupInjected = true;
+}
+
+function handleCustomTimer() {
+  const minutes = parseInt(document.getElementById('customMinutes').value);
+  if (!isNaN(minutes) && minutes > 0) {
+    setTimer(minutes);
+  } else {
+    alert("Please enter a valid number of minutes.");
+  }
 }
 
 function setTimer(minutes) {
@@ -68,6 +77,7 @@ function checkTimeAndUpdateUsage() {
   const endTime = Date.now();
   const duration = (endTime - startTime) / 1000; // Convert to seconds
 
+  console.log('Content script running on:', window.location.href);
   chrome.runtime.sendMessage({ type: "checkTime", site: window.location.hostname }, (response) => {
     if (response) {
       if (response.block) {
@@ -83,10 +93,12 @@ function checkTimeAndUpdateUsage() {
       // Update remaining time display
       const remainingTimeElement = document.getElementById('site-limiter-remaining-time');
       if (remainingTimeElement) {
+        console.log('Updating remaining time display');
         const minutes = Math.floor(response.remainingTime / 60000);
         const seconds = Math.floor((response.remainingTime % 60000) / 1000);
         remainingTimeElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
       } else {
+        console.log('Creating remaining time display');
         const timeDisplay = document.createElement('div');
         timeDisplay.id = 'site-limiter-remaining-time';
         timeDisplay.style.position = 'fixed';

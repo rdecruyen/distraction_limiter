@@ -1,13 +1,11 @@
 const BLOCKED_SITES = [
   {
-    domain: "youtube.com",
-    name: "YouTube",
-    defaultLimit: 30 // in minutes
+    domain: "www.youtube.com",
+    name: "YouTube"
   },
   {
-    domain: "facebook.com",
-    name: "Facebook",
-    defaultLimit: 20
+    domain: "www.facebook.com",
+    name: "Facebook"
   },
   // Add more sites as needed
 ];
