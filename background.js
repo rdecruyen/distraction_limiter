@@ -1,13 +1,25 @@
 const BLOCKED_SITES = [
   {
     domain: "www.youtube.com",
-    name: "YouTube"
+    name: "YouTube", 
+    limitOnTheGo: true
   },
   {
     domain: "www.facebook.com",
-    name: "Facebook"
+    name: "Facebook",
+    limitOnTheGo: true
   },
-  // Add more sites as needed
+  {
+    domain: "www.demorgen.be",
+    name: "De Morgen",
+    limitOnTheGo: false
+  },
+  {
+    domain: "www.lichess.org", 
+    name: "Lichess",
+    limitOnTheGo: false
+  }
+  // Add more sites as needed, add each site to the manifest.json file
 ];
 
 const COOLDOWN_PERIOD = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -20,7 +32,8 @@ let globalBlockUntil = 0;
 // Initialize timers for each site
 BLOCKED_SITES.forEach(site => {
   siteTimers[site.domain] = {
-    allowedTime: 0
+    allowedTime: 0, 
+    limitOnTheGo: site.limitOnTheGo
   };
 });
 
@@ -39,11 +52,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (currentTime < globalBlockUntil) {
       console.log(`${site} is currently in cooldown period`);  // Log cooldown status
       sendResponse({ status: "blocked", remainingCooldown: Math.ceil((globalBlockUntil - currentTime) / 60000) });
-    } else {
+    } else if (siteTimers[site].limitOnTheGo) {
       siteTimers[site].allowedTime = currentTime + duration * 60000;
       globalBlockUntil = Math.max(globalBlockUntil, siteTimers[site].allowedTime + COOLDOWN_PERIOD);
       console.log(`Timer set for ${site}:`, siteTimers[site]);  // Log updated timer
       chrome.storage.local.set({ siteTimers, globalBlockUntil });
+      sendResponse({ status: "timerSet" });
+      checkTabs();
+    } else {
+      console.log(`${site} has nog limit on the go`)
+      // set allowed time to global block until - cooldown period
+      siteTimers[site].allowedTime = globalBlockUntil - COOLDOWN_PERIOD;
+      chrome.storage.local.set({ siteTimers});
       sendResponse({ status: "timerSet" });
       checkTabs();
     }
@@ -52,9 +72,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { site } = message;
     const currentTime = Date.now();
     // console.log(`Checking time for ${site}`);
+    // check if site is in the blocked sites list
+    if (!siteTimers[site]) {
+      return true;
+    }
     sendResponse({ 
       block: currentTime > siteTimers[site].allowedTime && currentTime < globalBlockUntil,
-      timerRunning: currentTime < siteTimers[site].allowedTime,
+      timerRunning: currentTime < siteTimers[site].allowedTime || !siteTimers[site].limitOnTheGo,
       remainingTime: Math.max(0, siteTimers[site].allowedTime - currentTime)
     });
   }
@@ -69,6 +93,9 @@ function checkTabs() {
       // console.log(`Found ${tabs.length} tabs for ${site.domain}`);  // Log number of tabs found
       if (tabs && Array.isArray(tabs)) {
         tabs.forEach((tab) => {
+          if (!site.limitOnTheGo) {
+            siteTimers[site.domain].allowedTime = globalBlockUntil - COOLDOWN_PERIOD;
+          }
           if (currentTime > siteTimers[site.domain].allowedTime && currentTime < globalBlockUntil) {
             console.log(`Blocking tab for ${site.domain}`);  // Log when a tab is blocked
             chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("blocked.html") + `?site=${site.name}` });

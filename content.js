@@ -76,6 +76,13 @@ function setTimer(minutes) {
 function checkTimeAndUpdateUsage() {
   const endTime = Date.now();
   const duration = (endTime - startTime) / 1000; // Convert to seconds
+  // check if the current site is in the blocked list while not having acces to that list itself
+  chrome.storage.local.get('siteTimers', (result) => {
+    const { siteTimers } = result;
+    if (!siteTimers || !siteTimers[window.location.hostname]) {
+      return;
+    }
+  });
 
   console.log('Content script running on:', window.location.href);
   chrome.runtime.sendMessage({ type: "checkTime", site: window.location.hostname }, (response) => {

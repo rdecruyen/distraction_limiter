@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Site Limiter TEST",
-  "version": "1.1",
+  "version": "1.21",
   "description": "Limit time spent on specified websites",
   "permissions": [
     "storage",
@@ -10,6 +10,7 @@
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
+    "*://*.demorgen.be/*",
     "*://*.facebook.com/*"
   ],
   "background": {
