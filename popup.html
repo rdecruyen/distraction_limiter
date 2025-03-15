@@ -2,17 +2,15 @@
 <html>
 <head>
   <title>Site Limiter</title>
-  <style>
-    body {
-      width: 300px;
-      padding: 10px;
-      font-family: Arial, sans-serif;
-    }
-  </style>
 </head>
 <body>
   <h1>Site Limiter</h1>
   <div id="site-list"></div>
+  <div id="focus-mode">
+    <h2>Focus Mode</h2>
+    <input type="number" id="focus-minutes" min="1" placeholder="Minutes">
+    <button id="activate-focus">Activate Focus Mode</button>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

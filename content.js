@@ -47,7 +47,7 @@ function injectPopup() {
 
   document.getElementById('setCustomTimer').addEventListener('click', handleCustomTimer);
 
-document.getElementById('customMinutes').addEventListener('keydown', function(event) {
+  document.getElementById('customMinutes').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       handleCustomTimer();
     }

@@ -82,6 +82,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       remainingTime: Math.max(0, siteTimers[site].allowedTime - currentTime)
     });
   }
+  if (message.type === "activateFocusMode") {
+    const currentTime = Date.now();
+    globalBlockUntil = message.focusEndTime;
+    console.log(`Activating focus mode for ${(message.focusEndTime - currentTime)/ 60000} min`);
+
+    for (let site in siteTimers) {
+      siteTimers[site].allowedTime = currentTime;
+    }
+
+    chrome.storage.local.set({ siteTimers, globalBlockUntil });
+    sendResponse({ status: "focusModeActivated" });
+  }
   return true;
 });
 
