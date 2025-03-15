@@ -15,7 +15,7 @@ const BLOCKED_SITES = [
     limitOnTheGo: false
   },
   {
-    domain: "www.lichess.org", 
+    domain: "lichess.org",
     name: "Lichess",
     limitOnTheGo: false
   }
@@ -60,7 +60,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ status: "timerSet" });
       checkTabs();
     } else {
-      console.log(`${site} has nog limit on the go`)
+      console.log(`${site} has no limit on the go`)
       // set allowed time to global block until - cooldown period
       siteTimers[site].allowedTime = globalBlockUntil - COOLDOWN_PERIOD;
       chrome.storage.local.set({ siteTimers});
@@ -85,19 +85,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+function getFullDomain(domain) {
+  return domain.startsWith('www.') ? domain : `www.${domain}`;
+}
 function checkTabs() {
   const currentTime = Date.now();
-  // console.log("Checking tabs at:", new Date(currentTime));  // Log when tabs are checked
   BLOCKED_SITES.forEach(site => {
+    const fullDomain = getFullDomain(site.domain);
     chrome.tabs.query({ url: `*://*.${site.domain}/*` }, (tabs) => {
-      // console.log(`Found ${tabs.length} tabs for ${site.domain}`);  // Log number of tabs found
       if (tabs && Array.isArray(tabs)) {
         tabs.forEach((tab) => {
           if (!site.limitOnTheGo) {
-            siteTimers[site.domain].allowedTime = globalBlockUntil - COOLDOWN_PERIOD;
+            siteTimers[fullDomain].allowedTime = globalBlockUntil - COOLDOWN_PERIOD;
           }
-          if (currentTime > siteTimers[site.domain].allowedTime && currentTime < globalBlockUntil) {
-            console.log(`Blocking tab for ${site.domain}`);  // Log when a tab is blocked
+          if (currentTime > siteTimers[fullDomain].allowedTime && currentTime < globalBlockUntil) {
+            console.log(`Blocking tab for ${fullDomain}`);
             chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("blocked.html") + `?site=${site.name}` });
           }
         });
