@@ -9,23 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentTime = Date.now();
 
     for (let site in siteTimers) {
-      if (!siteTimers[site].limitOnTheGo) {
-        continue;
-      }
       const remainingTime = Math.max(0, siteTimers[site].allowedTime - currentTime);
       if (remainingTime > 0) {
         isBlocked = false;
       }
       const siteElement = document.createElement('div');
       const seconds = Math.floor((remainingTime % 60000) / 1000);
-      siteElement.innerHTML = `
-        <p>${site.slice(4, -3)} ${Math.floor(remainingTime / 60000)}:${seconds.toString().padStart(2, '0')}</p>
-      `;
+      if (!siteTimers[site].limitOnTheGo) {
+        siteElement.innerHTML = `
+        <p>${site.slice(0, -3)} visits:${siteTimers[site].visitCount}</p>`;
+      } else {
+        siteElement.innerHTML = `
+          <p>${site.slice(4, -3)} ${Math.floor(remainingTime / 60000)}:${seconds.toString().padStart(2, '0')} visits:${siteTimers[site].visitCount}</p>
+        `;
+      }
       siteList.appendChild(siteElement);
     }
     if (globalBlockUntil > currentTime && isBlocked) {
       const siteElement = document.createElement('div');
-      siteElement.innerHTML = `<p>Blocked for ${Math.floor((globalBlockUntil-currentTime)/60000)} min</p>`;
+      siteElement.innerHTML = `<p>Blocked for ${Math.ceil((globalBlockUntil-currentTime)/60000)} min</p>`;
       siteList.appendChild(siteElement);
     }
   });
