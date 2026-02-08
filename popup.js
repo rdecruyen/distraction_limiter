@@ -1,5 +1,14 @@
 console.log("Popup script loaded");
 
+function extractSiteName(str) {
+  const match = str.match(/\.(.*?)\./);
+  if (match) {
+      return match[1]; // Return string between two dots
+  }
+  const singleDotIndex = str.indexOf(".");
+  return singleDotIndex !== -1 ? str.substring(0, singleDotIndex) : null;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const siteList = document.getElementById('site-list');
 
@@ -17,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const seconds = Math.floor((remainingTime % 60000) / 1000);
       if (!siteTimers[site].limitOnTheGo) {
         siteElement.innerHTML = `
-        <p>${site.slice(0, -3)} visits:${siteTimers[site].visitCount}</p>`;
+        <p>${extractSiteName(site)} visits:${siteTimers[site].visitCount}</p>`;
       } else {
         siteElement.innerHTML = `
-          <p>${site.slice(4, -3)} ${Math.floor(remainingTime / 60000)}:${seconds.toString().padStart(2, '0')} visits:${siteTimers[site].visitCount}</p>
+          <p>${extractSiteName(site)} ${Math.floor(remainingTime / 60000)}:${seconds.toString().padStart(2, '0')} visits:${siteTimers[site].visitCount}</p>
         `;
       }
       siteList.appendChild(siteElement);

@@ -2,22 +2,26 @@ const BLOCKED_SITES = [
   {
     domain: "www.youtube.com",
     name: "YouTube", 
-    limitOnTheGo: true
+    limitOnTheGo: true,
+    visitMax: Infinity
   },
   {
     domain: "www.facebook.com",
     name: "Facebook",
-    limitOnTheGo: true
+    limitOnTheGo: true, 
+    visitMax: 2
   },
   {
     domain: "www.demorgen.be",
     name: "De Morgen",
-    limitOnTheGo: false
+    limitOnTheGo: false, 
+    visitMax: 4
   },
   {
     domain: "lichess.org",
     name: "Lichess",
-    limitOnTheGo: false
+    limitOnTheGo: false, 
+    visitMax: 0
   }
   // Add more sites as needed, add each site to the manifest.json file
 ];
@@ -36,26 +40,38 @@ BLOCKED_SITES.forEach(site => {
     allowedTime: 0, 
     limitOnTheGo: site.limitOnTheGo,
     visitCount: 0,
-    lastVisitTime: 0
+    lastVisitTime: 0, 
+    visitMax: site.visitMax
   };
 });
 
+// Function to check and reset daily counters
+function checkAndResetDailyCounters() {
+  const currentDate = new Date().toDateString();
+  if (currentDate !== lastResetDate) {
+    console.log("Resetting daily counters");
+    for (let site in siteTimers) {
+      siteTimers[site].visitCount = 0;
+      siteTimers[site].lastVisitTime = 0;
+      const originalSite = BLOCKED_SITES.find(s => s.domain === site);
+      siteTimers[site].visitMax = originalSite ? originalSite.visitMax : siteTimers[site].visitMax; // Reset visitMax to the original value if found
+    }
+    lastResetDate = currentDate;
+    chrome.storage.local.set({ siteTimers, lastResetDate });
+  }
+}
+
+// Load saved data and perform initial reset check
 chrome.storage.local.get(['siteTimers', 'lastResetDate', 'globalBlockUntil'], (result) => {
   lastResetDate = result.lastResetDate || new Date().toDateString();
   siteTimers = result.siteTimers || siteTimers;
   globalBlockUntil = result.globalBlockUntil || 0;
 
-  // Check if it's a new day and reset visit counts if necessary
-  const currentDate = new Date().toDateString();
-  if (currentDate !== lastResetDate) {
-    for (let site in siteTimers) {
-      siteTimers[site].visitCount = 0;
-      siteTimers[site].lastVisitTime = 0;
-    }
-    lastResetDate = currentDate;
-    chrome.storage.local.set({ siteTimers, lastResetDate });
-  }
+  checkAndResetDailyCounters();
 });
+
+// Run the reset check every hour
+setInterval(checkAndResetDailyCounters, 60 * 60 * 1000);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // console.log("Received message:", message);  // Log incoming messages
@@ -129,17 +145,16 @@ function checkTabs() {
     chrome.tabs.query({ url: `*://*.${site.domain}/*`, active: true }, (tabs) => {
       if (tabs && Array.isArray(tabs) && tabs.length > 0) {
         try {
-          if (currentTime > siteTimers[site.domain].allowedTime && currentTime < globalBlockUntil) {
+          if ((currentTime > siteTimers[site.domain].allowedTime && currentTime < globalBlockUntil) || siteTimers[site.domain].visitCount > siteTimers[site.domain].visitMax) {
             console.log(`Blocking tab for ${fullDomain}`);
             chrome.tabs.update(tabs[0].id, { url: chrome.runtime.getURL("blocked.html") + `?site=${site.name}` });
           } else if (currentTime - siteTimers[site.domain].lastVisitTime > DISTINCT_VISIT_INTERVAL) {
-            siteTimers[site.domain].visitCount++;// Check if enough time has passed since the last visit
-            siteTimers[site.domain].lastVisitTime = currentTime;
-            console.log(`Distinct visit recorded for ${fullDomain}. Total visits: ${siteTimers[site.domain].visitCount}`);
-
-            // Save updated siteTimers to storage
-            chrome.storage.local.set({ siteTimers });
+            siteTimers[site.domain].visitCount++; // Check if enough time has passed since the last visit
+            console.log(`Distinct visit recorded for ${fullDomain}. Total visits: ${siteTimers[site.domain].visitCount} Max visits:${siteTimers[site.domain].visitMax}`);
           }
+          
+          siteTimers[site.domain].lastVisitTime = currentTime;
+          chrome.storage.local.set({ siteTimers });
         } catch (error) {
           console.log(siteTimers)
           console.error(`Error while processing tab for ${fullDomain}:`, error);
