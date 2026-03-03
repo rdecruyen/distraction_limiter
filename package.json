@@ -1,0 +1,13 @@
+{
+  "name": "distraction_limiter_tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "devDependencies": {
+    "jest": "^29.6.1",
+    "jsdom": "^22.1.0"
+  }
+}
